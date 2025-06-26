@@ -9,7 +9,7 @@ jobs:
               run: sudo apt-get install cowsay -y
 
             - name: execute cowsay cmd
-              run: cowsay -f dog "Run for cover, I am a dog Rawr..." >> dog.txt
+              run: cowsay -f dog "Run for cover, I am a dog Woof..." >> dog.txt
 
             - name: Sleep for 10 seconds
               run: sleep 10
@@ -22,13 +22,13 @@ jobs:
               run: sleep 10
 
             - name: Test file exists
-              run: grep -i "Dragon" Dragon.txt
+              run: grep -i "dog" dog.txt
     deploy: 
         needs: test
         runs-on: ubuntu-latest
         steps:         
             - name: Read the file
-              run: cat Dragon.txt
+              run: cat dog.txt
 
             - name: deploy
               run: echo "Deploying..."
