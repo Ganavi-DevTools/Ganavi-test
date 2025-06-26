@@ -9,26 +9,37 @@ jobs:
               run: sudo apt-get install cowsay -y
 
             - name: execute cowsay cmd
-              run: cowsay -f dragon "Run for cover, I am a dragon rawr..." >> dragon.txt
+              run: cowsay -f Elephant "Run for cover, I am a Elephant trumpets..." >> Elephant.txt
 
-            - name: Sleep for 10 seconds
-              run: sleep 10
+            - name: Upload Artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                    name: Elephant-text-file
+                    path: Elephant.txt
+
 
     test:
         needs: build
         runs-on: Ubuntu-latest
         steps:
-            - name: Sleep for 10 seconds
-              run: sleep 10
+            - name: Download Artifacts
+              uses: actions/download-artifact@v4
+              with:
+                    name: Elephant-text-file
 
             - name: Test file exists
-              run: grep -i "dragon" dragon.txt
+              run: grep -i "Elephant" Elephant.txt
     deploy: 
         needs: test
         runs-on: ubuntu-latest
-        steps:         
+        steps: 
+            - name: Download Artifacts
+              uses: actions/download-artifact@v4
+              with:
+                    name: Elephant-text-file
+            
             - name: Read the file
-              run: cat dragon.txt
+              run: cat Elephant.txt
 
             - name: deploy
               run: echo "Deploying..."
