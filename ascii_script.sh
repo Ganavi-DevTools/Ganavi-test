@@ -1,6 +1,6 @@
 sudo apt-get install cowsay -y
-cowsay -f cow "Run for cover, I am a cow Mooh..." >> cow.txt
-grep -i "cow" cow.txt
-cat cow.txt
+cowsay -f tux "Run for cover, I am a tux wooh..." >> tux.txt
+grep -i "tux" tux.txt
+cat tux.txt
 ls
 cat demo.txt
