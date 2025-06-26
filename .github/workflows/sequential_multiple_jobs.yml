@@ -9,7 +9,7 @@ jobs:
               run: sudo apt-get install cowsay -y
 
             - name: execute cowsay cmd
-              run: cowsay -f elephant "Run for cover, I am a elephant trumpets..." >> elephant.txt
+              run: cowsay -f elephant "Run for cover, I am a elephant trumpets..." >> Elephant.txt
 
             - name: Sleep for 10 seconds
               run: sleep 10
@@ -22,13 +22,13 @@ jobs:
               run: sleep 10
 
             - name: Test file exists
-              run: grep -i "elephant" elephant.txt
+              run: grep -i "Elephant" Elephant.txt
     deploy: 
         needs: test
         runs-on: ubuntu-latest
         steps:         
             - name: Read the file
-              run: cat elephant.txt
+              run: cat Elephant.txt
 
             - name: deploy
               run: echo "Deploying..."

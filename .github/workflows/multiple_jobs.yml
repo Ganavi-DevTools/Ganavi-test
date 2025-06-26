@@ -9,7 +9,7 @@ jobs:
               run: sudo apt-get install cowsay -y
 
             - name: execute cowsay cmd
-              run: cowsay -f dog "Run for cover, I am a dog Rawr..." >> dog.txt
+              run: cowsay -f dog "Run for cover, I am a dragon Rawr..." >> Dragon.txt
 
             - name: Sleep for 10 seconds
               run: sleep 10
