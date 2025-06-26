@@ -12,5 +12,6 @@ jobs:
                echo "Running the first step"
                ls
                cat demo.txt
-            
-               
+
+            - name: Generate ASCII Artwork
+              run: cowsay -f dragon "run for cover... rawr"
