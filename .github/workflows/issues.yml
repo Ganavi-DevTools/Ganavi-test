@@ -13,6 +13,8 @@ jobs:
           curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             https://api.github.com/repos/${{ github.repository }}/collaborators \
             > collaborators.json
+      - name: print
+        run: echo "collaborators.json"
 
       - name: Compare with previous list
         run: |
