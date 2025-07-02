@@ -6,7 +6,7 @@ on:
         #     - feature/*
         #     - test/**
         branches:
-            - main
+            - main   
             - '!feature/*'
     pull_request:
         types:
