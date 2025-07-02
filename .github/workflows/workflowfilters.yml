@@ -4,8 +4,8 @@ on:
     push:
         #  branches-ignore: 
         #     - feature/*
-        #     - test/**
-        branches:
+        #     - test/**   
+        branches:  
             - master   
             - '!feature/*'
     pull_request:
