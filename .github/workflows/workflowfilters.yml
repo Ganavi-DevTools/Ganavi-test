@@ -5,8 +5,8 @@ on:
         #  branches-ignore: 
         #     - feature/*
         #     - test/**   
-        branches:  
-            - master   
+        branches:             
+            - master     
             - '!feature/*'
     pull_request:
         types:
