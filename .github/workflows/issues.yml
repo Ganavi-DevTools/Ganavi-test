@@ -1,8 +1,11 @@
 name: Check New Users and Create Issue
+
 on:
-  push:
   schedule:
     - cron: '*/5 * * * *'  # Runs every 5 minutes
+
+permissions:
+  issues: write
 
 jobs:
   check-new-users:
@@ -13,13 +16,14 @@ jobs:
           curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             https://api.github.com/repos/${{ github.repository }}/collaborators \
             > collaborators.json
-      - name: print
-        run: echo "collaborators.json"
+
+      - name: Install jq
+        run: sudo apt-get install jq
 
       - name: Compare with previous list
         run: |
           if [ -f collaborators_previous.json ]; then
-            new_users=$(comm -13 <(jq -r '.[].login' collaborators_previous.json | sort) <(jq -r '.[].login' collaborators.json | sort))
+            new_users=$(bash -c 'comm -13 <(jq -r ".[].login" collaborators_previous.json | sort) <(jq -r ".[].login" collaborators.json | sort)')
             if [ -n "$new_users" ]; then
               echo "New users detected: $new_users"
               echo "$new_users" > new_users.txt
@@ -28,10 +32,12 @@ jobs:
           mv collaborators.json collaborators_previous.json
 
       - name: Create issue for new users
-        if: steps.compare-with-previous-list.outputs.new_users != ''
+        if: ${{ steps.compare-with-previous-list.outputs.new_users != '' }}
         run: |
-          while IFS= read -r user; do
-            curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-              -d "{\"title\": \"Welcome $user!\", \"body\": \"Hello $user, welcome to the repository!\"}" \
-              https://api.github.com/repos/${{ github.repository }}/issues
-          done < new_users.txt
+          if [ -f new_users.txt ]; then
+            while IFS= read -r user; do
+              curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                -d "{\"title\": \"Welcome $user!\", \"body\": \"Hello $user, welcome to the repository!\"}" \
+                https://api.github.com/repos/${{ github.repository }}/issues
+            done < new_users.txt
+          fi
