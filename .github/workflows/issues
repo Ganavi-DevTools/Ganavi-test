@@ -1,5 +1,4 @@
 name: Check New Users and Create Issue
-
 on:
   push:
   schedule:
