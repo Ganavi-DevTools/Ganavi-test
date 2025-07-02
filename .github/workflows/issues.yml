@@ -1,6 +1,7 @@
 name: Check New Users and Create Issue
 
 on:
+  push:
   schedule:
     - cron: '*/5 * * * *'  # Runs every 5 minutes
 
