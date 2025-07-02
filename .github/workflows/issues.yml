@@ -1,44 +1,39 @@
-name: Check New Users and Create Issue
+name: Check New Collaborators and Create Issues
 
 on:
-  push:
   schedule:
     - cron: '*/5 * * * *'  # Runs every 5 minutes
 
 permissions:
   issues: write
+  contents: read
 
 jobs:
-  check-new-users:
+  check-new-collaborators:
     runs-on: ubuntu-latest
     steps:
-      - name: Get list of collaborators
+      - name: Fetch current list of collaborators
         run: |
-          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
             https://api.github.com/repos/${{ github.repository }}/collaborators \
-            > collaborators.json
-
-      - name: Install jq
-        run: sudo apt-get install jq
+            > collaborators_current.json
 
       - name: Compare with previous list
         run: |
           if [ -f collaborators_previous.json ]; then
-            new_users=$(bash -c 'comm -13 <(jq -r ".[].login" collaborators_previous.json | sort) <(jq -r ".[].login" collaborators.json | sort)')
-            if [ -n "$new_users" ]; then
-              echo "New users detected: $new_users"
-              echo "$new_users" > new_users.txt
+            new_collaborators=$(jq -r '.[].login' collaborators_current.json | sort | comm -13 <(jq -r '.[].login' collaborators_previous.json | sort) -)
+            if [ -n "$new_collaborators" ]; then
+              echo "New collaborators detected: $new_collaborators"
+              echo "$new_collaborators" > new_collaborators.txt
             fi
           fi
-          mv collaborators.json collaborators_previous.json
+          mv collaborators_current.json collaborators_previous.json
 
-      - name: Create issue for new users
-        if: ${{ steps.compare-with-previous-list.outputs.new_users != '' }}
+      - name: Create issues for new collaborators
+        if: success() && steps.compare-with-previous-list.outputs.new_collaborators != ''
         run: |
-          if [ -f new_users.txt ]; then
-            while IFS= read -r user; do
-              curl -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                -d "{\"title\": \"Welcome $user!\", \"body\": \"Hello $user, welcome to the repository!\"}" \
-                https://api.github.com/repos/${{ github.repository }}/issues
-            done < new_users.txt
-          fi
+          while IFS= read -r collaborator; do
+            curl -X POST -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
+              -d "{\"title\": \"Welcome $collaborator!\", \"body\": \"Hello $collaborator, welcome to the repository!\"}" \
+              https://api.github.com/repos/${{ github.repository }}/issues
+          done < new_collaborators.txt
