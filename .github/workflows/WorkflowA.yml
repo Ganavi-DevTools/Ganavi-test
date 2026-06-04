@@ -1,0 +1,84 @@
+name: Workflow A
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  get-b-artifact:
+    runs-on: ubuntu-latest
+    outputs:
+      run_id: ${{ steps.check.outputs.run_id }}
+
+    steps:
+      - name: Find successful B run on this branch or trigger it
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const branch = context.ref.replace('refs/heads/', '');
+            const workflowId = 'workflow-b.yml';
+
+            async function getSuccessfulRun() {
+              const result = await github.rest.actions.listWorkflowRuns({
+                owner,
+                repo,
+                workflow_id: workflowId,
+                branch,
+                per_page: 10
+              });
+
+              return result.data.workflow_runs.find(
+                run => run.status === 'completed' && run.conclusion === 'success'
+              );
+            }
+
+            let run = await getSuccessfulRun();
+
+            if (!run) {
+              core.info(`No successful Workflow B run found on branch ${branch}. Triggering Workflow B.`);
+
+              await github.rest.actions.createWorkflowDispatch({
+                owner,
+                repo,
+                workflow_id: workflowId,
+                ref: branch
+              });
+
+              for (let i = 0; i < 30; i++) {
+                await new Promise(resolve => setTimeout(resolve, 10000));
+                run = await getSuccessfulRun();
+                if (run) {
+                  break;
+                }
+              }
+            }
+
+            if (!run) {
+              core.setFailed('Workflow B did not complete successfully in time.');
+              return;
+            }
+
+            core.setOutput('run_id', String(run.id));
+
+  use-artifact:
+    needs: get-b-artifact
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download artifact from Workflow B
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: workflow-b.yml
+          run_id: ${{ needs.get-b-artifact.outputs.run_id }}
+          name: demo-artifact
+          path: downloaded
+
+      - name: Show artifact content
+        run: cat downloaded/artifact.txt
